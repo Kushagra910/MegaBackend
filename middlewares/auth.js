@@ -39,7 +39,7 @@ exports.auth = async(req,res,next) => {
 
 //isStudent middleware
 
-exports.isSignUp = async(req,res,next)=>{
+exports.isStudent = async(req,res,next)=>{
   try{
     if(req.user.accountType !== "Student"){
       return res.status(400).json({
