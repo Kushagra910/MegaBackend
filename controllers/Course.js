@@ -104,7 +104,7 @@ exports.showAllCourses = async (req, res) => {
       {
         courseName: true,
         price: true,
-        thumbnail: true, 
+        thumbnail: true,
         instructor: true,
         ratingAndReviews: true,
         studentsEnrolled: true,
@@ -123,6 +123,51 @@ exports.showAllCourses = async (req, res) => {
       success: false,
       message: "cannot fetch course data",
       error: err.message,
+    });
+  }
+};
+
+//fetch all details of a particular course handler function
+
+exports.getCourseDetails = async (req, res) => {
+  try {
+    //get courseId
+    const { courseId } = req.body;
+    // find course details and populate all the referred data
+    const courseDetails = await Course.find({ _id: courseId })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("Category")
+      .populate("ratingAndReview")
+      .populate({
+        path: "CourseContent",
+        populate: {
+          path: "subSection",
+        },
+      })
+      .exec();
+    //validation
+    if (!courseDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find the course with ${courseId} courseId`,
+      });
+    }
+    // return response
+    return res.status(200).json({
+      success: true,
+      message: "All courseDetails are fetched successfully",
+      data: courseDetails,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
     });
   }
 };
