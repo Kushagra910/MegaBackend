@@ -10,7 +10,7 @@ const categorySchema = new mongoose.Schema({
     type:String,
     trim : true,
   },
-  course : [{
+  courses : [{
     type : mongoose.Schema.Types.ObjectId,
     ref : "Course",
   }],
