@@ -1,5 +1,5 @@
 const Tag = require("../models/Category");
-
+const Category = require("../models/Category");
 // create Tag handler
 exports.createCategory = async(req,res)=>{
   try{
@@ -49,7 +49,7 @@ exports.getAllCategory = async(req,res)=>{
   }
 }
 
-
+// categoryPageDetails shows most popular,top courses & frequentyly bought courses 
 exports.categoryPageDetails = async (req, res) => {
 	try {
 		const { categoryId } = req.body;
