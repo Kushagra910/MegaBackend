@@ -1,4 +1,3 @@
-const Tag = require("../models/Category");
 const Category = require("../models/Category");
 // create Tag handler
 exports.createCategory = async(req,res)=>{
@@ -30,16 +29,15 @@ exports.createCategory = async(req,res)=>{
   }
 }
 
-
 //get all tags
 
-exports.getAllCategory = async(req,res)=>{
+exports.showAllCategories = async(req,res)=>{
   try{
-    const allTags = await Tag.find({},{name:true,description:true});
+    const allCategories = await Category.find({},{name:true,description:true});
     return res.status(200).json({
       success:true,
-      message:"All tags obtained successfully",
-      allTags,
+      message:"All Categories obtained successfully",
+      allCategories,
     })
   } catch(err){
     return res.status(500).json({
@@ -67,36 +65,38 @@ exports.categoryPageDetails = async (req, res) => {
 				.json({ success: false, message: "Category not found" });
 		}
 		// Handle the case when there are no courses
-		if (selectedCategory.courses.length === 0) {
-			console.log("No courses found for the selected category.");
-			return res.status(404).json({
-				success: false,
-				message: "No courses found for the selected category.",
-			});
-		}
+		// if (selectedCategory.courses.length === 0) {
+		// 	console.log("No courses found for the selected category.");
+		// 	return res.status(404).json({
+		// 		success: false,
+		// 		message: "No courses found for the selected category.",
+		// 	});
+		// }
 
-		const selectedCourses = selectedCategory.courses;
+		// const selectedCourses = selectedCategory.courses;
 
-		// Get courses for other categories
-		const categoriesExceptSelected = await Category.find({
-			_id: { $ne: categoryId },
-		}).populate("courses");
-		let differentCourses = [];
-		for (const category of categoriesExceptSelected) {
-			differentCourses.push(...category.courses);
-		}
+		// // Get courses for other categories
+		// const categoriesExceptSelected = await Category.find({
+		// 	_id: { $ne: categoryId }, // ne = not equal to
+		// }).populate("courses");
+		// let differentCourses = [];
+		// for (let category of categoriesExceptSelected) {
+		// 	differentCourses.push(...category.courses);
+		// }
 
-		// Get top-selling courses across all categories
-		const allCategories = await Category.find().populate("courses");
-		const allCourses = allCategories.flatMap((category) => category.courses);
-		const mostSellingCourses = allCourses
-			.sort((a, b) => b.sold - a.sold)
-			.slice(0, 10);
+		// // Get top-selling courses across all categories
+		// const allCategories = await Category.find({}).populate("courses");
+		// const allCourses = allCategories.flatMap((category) => category.courses);
+		// const mostSellingCourses = allCourses
+		// 	.sort((a, b) => b.sold - a.sold)
+		// 	.slice(0, 10);
 
-		res.status(200).json({
-			selectedCourses: selectedCourses,
-			differentCourses: differentCourses,
-			mostSellingCourses: mostSellingCourses,
+		return res.status(200).json({
+			success:true,
+			message:"Category Page Details are Coming"
+			// selectedCourses: selectedCourses,
+			// differentCourses: differentCourses,
+			// mostSellingCourses: mostSellingCourses,
 		});
 	} catch (error) {
 		return res.status(500).json({

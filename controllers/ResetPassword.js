@@ -1,7 +1,8 @@
 const User  = require("../models/User");
 const mailSender = require("../utils/mailSender");
 const bcrypt  = require("bcrypt");
-
+const crypto = require("crypto");
+const {passwordUpdated} = require("../templates/passwordUpdate");
 // Reset Password Token handler
 
 exports.resetPasswordToken = async(req,res) => {
@@ -47,7 +48,7 @@ exports.resetPasswordToken = async(req,res) => {
  exports.resetPassword = async(req,res)=>{
   try{
     // data fetch 
-    const {password,confirmPassword,tokken} = req.body;
+    const {password,confirmPassword,token} = req.body;
     // validation
     if(password !== confirmPassword){
       return res.status(400).json({
@@ -79,6 +80,7 @@ exports.resetPasswordToken = async(req,res) => {
       {password : hashedPassword},
       {new : true},
     );
+    await mailSender(userDetails.email,"Password Reset Conformation",passwordUpdated(userDetails.email,userDetails.firstName));
     // return res.
     return res.status(200).json({
       success:true,
