@@ -109,7 +109,7 @@ exports.deletSubSection = async(req,res)=>{
       });
     }
     //Delete the subSection
-    await subSection.findByIdAndDelete(subSectionId);
+    await SubSection.findByIdAndDelete(subSectionId);
     //Remove the SubSection Reference from the section
     await Section.findByIdAndUpdate(sectionId,{
       $pull:{
