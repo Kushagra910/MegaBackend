@@ -1,5 +1,4 @@
 const User = require("../models/User");
-const Profile = require("../models/Profile")
 const OTP = require("../models/OTP");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
@@ -104,15 +103,17 @@ exports.signUp = async (req, res) => {
     }
 
     // Find Most Recent OTP
-    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const recentOtp = await OTP.find({ email })
+      .sort({ createdAt: -1 })
+      .limit(1);
     console.log(recentOtp);
     // validate OTP
     if (recentOtp.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "The OTP is not valid",
+        message: "OTP not found",
       });
-    } else if (otp !== recentOtp[0].otp) {
+    } else if (otp !== recentOtp.otp) {
       return res.status(400).json({
         // ivalid otp
         success: false,
@@ -136,7 +137,7 @@ exports.signUp = async (req, res) => {
       contactNumber,
       password: hashedPassword,
       accountType,
-      additionalDetails: profileDetails._id,
+      addtionalDetails: profileDetails._id,
       image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}${lastName}`,
     });
     // return res
@@ -179,18 +180,13 @@ exports.login = async (req, res) => {
       const payLoad = {
         email: user.email,
         id: user._id,
-        accountType: user.accountType,
+        role: user.accountType,
       };
       const token = jwt.sign(payLoad, process.env.JWT_SECRET, {
-        expiresIn: "24h",
+        expires: "2h",
       });
       user.token = token;
-      user.password = undefined;
-      // Set cookie for token and return success response
-			const options = {
-				expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-				httpOnly: true,
-			};
+      user.password = null;
       // create cookie and send response
       res.cookie("token", token, options).status(200).json({
         success: true,
@@ -207,7 +203,7 @@ exports.login = async (req, res) => {
   } catch (err) {
     return res.status(500).json({
       success: false,
-      message: "Login Failure , please try again",
+      message: "Login failure , please try again",
     });
   }
 };

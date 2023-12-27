@@ -7,10 +7,10 @@ const { uploadImageToCloudinary } = require("../utils/imageUploader");
 exports.createCourse = async (req, res) => {
   try {
     //fetch data
-    const { courseName, courseDescription, whatYouWillLearn, price,status, category ,tag,instructions} =
+    const { courseName, courseDescription, whatYouWillLearn, price, category } =
       req.body;
     // get thumbnail
-    const thumbnail = req.files.thumbnailImage;
+    const thumbnail = req.files.thumnailImage;
     // validation
     if (
       !courseName ||
@@ -18,18 +18,13 @@ exports.createCourse = async (req, res) => {
       !whatYouWillLearn ||
       !price ||
       !category ||
-      !thumbnail || 
-      !tag || 
-      !instructions
+      !thumbnail
     ) {
       return res.status(400).json({
         success: false,
         message: "All fields required",
       });
     }
-    if (!status || status === undefined) {
-			status = "Draft";
-		}
     // check for instructor
     const userId = req.user.id;
     const instructorDetails = await User.findById(userId);
@@ -62,8 +57,6 @@ exports.createCourse = async (req, res) => {
       instructor: instructorDetails._id,
       whatYouWillLearn,
       price,
-      tage:tag,
-      status:status,
       category: categoryDetails._id,
       thumbnail: thumbnailImage.secure_url,
     });
@@ -92,7 +85,6 @@ exports.createCourse = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Course Created Successfully",
-      data:newCourse
     });
   } catch (err) {
     console.log(err);
@@ -105,7 +97,7 @@ exports.createCourse = async (req, res) => {
 };
 
 // getAllCourses handler function
-exports.getAllCourses = async (req, res) => {
+exports.showAllCourses = async (req, res) => {
   try {
     const allCourses = await Course.find(
       {},
@@ -149,10 +141,10 @@ exports.getCourseDetails = async (req, res) => {
           path: "additionalDetails",
         },
       })
-      .populate("category")
-      // .populate("ratingAndReview")
+      .populate("Category")
+      .populate("ratingAndReview")
       .populate({
-        path: "courseContent",
+        path: "CourseContent",
         populate: {
           path: "subSection",
         },

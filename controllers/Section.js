@@ -79,17 +79,12 @@ exports.updateSection = async(req,res) => {
 exports.deleteSection = async(req,res)=>{
   try{
     // fetch sectionId from parameters
-    const {sectionId,courseId} = req.body;
+    const {sectionId} = req.params;
     //findbyid and delete
     await Section.findByIdAndDelete(sectionId);
     // Do we need to delete the sectionid from courseCounted also? (check in testing)
-    await Course.findByIdAndUpdate(courseId,{
-      $pull:{
-        courseContent:sectionId,
-      }
-    },{new:true});
     //return response
-     res.status(200).json({
+    return res.status(200).json({
       success:true,
       message:"Section Deleted Successfully",
     });
