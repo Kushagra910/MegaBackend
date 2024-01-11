@@ -14,6 +14,7 @@ const {
   resetPassword,
 } = require("../controllers/ResetPassword")
 
+const {contact} = require("../controllers/Contact");
 const { auth } = require("../middlewares/auth")
 
 // Routes for Login, Signup, and Authentication
@@ -34,6 +35,7 @@ router.post("/sendotp", sendOTP)
 // Route for Changing the password
 router.post("/changepassword", auth, changePassword)
 
+
 // ********************************************************************************************************
 //                            Reset Password
 // ********************************************************************************************************
@@ -43,6 +45,9 @@ router.post("/reset-password-token", resetPasswordToken)
 
 // Route for resetting user's password after verification
 router.post("/reset-password", resetPassword)
+
+//Rout for contact page
+router.post("/contact",contact);
 
 // Export the router for use in the main application
 module.exports = router
