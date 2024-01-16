@@ -6,11 +6,11 @@ const {uploadImageToCloudinary} = require("../utils/imageUploader");
 exports.updateProfile = async (req, res) => {
   try {
     //fetch data
-    const { dateOfBirth = "", about = "", contactNumber, gender } = req.body;
+    const { dateOfBirth = "", about = "", contactNumber, gender,countrycode } = req.body;
     //fetch userId
     const id = req.user.id;
     //validation
-    if (!gender || !contactNumber || !id) {
+    if (!gender || !contactNumber || !id || !countrycode) {
       return res.status(400).json({
         success: false,
         message: "All fields are requried",
@@ -25,6 +25,7 @@ exports.updateProfile = async (req, res) => {
     profileDetails.dateOfBirth = dateOfBirth;
     profileDetails.contactNumber = contactNumber;
     profileDetails.gender = gender;
+    profileDetails.countrycode = countrycode;
     await profileDetails.save();
     //return response
     return res.status(200).json({
