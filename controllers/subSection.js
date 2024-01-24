@@ -97,7 +97,7 @@ exports.updateSubSection = async(req,res)=>{
 }
 
 //delete subsection
-exports.deletSubSection = async(req,res)=>{
+exports.deleteSubSection = async(req,res)=>{
   try{
     //fetch data
     const {sectionId,subSectionId} = req.body;
