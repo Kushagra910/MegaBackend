@@ -9,7 +9,10 @@ const {
   createCourse,
   getAllCourses,
   getCourseDetails,
-  editCourse
+  editCourse,
+  getFullCourseDetails,
+  getInstructorCourses,
+  deleteCourse
 } = require("../controllers/Course");
 
 // Categories Controllers Import
@@ -67,14 +70,18 @@ router.get("/getAllCourses", getAllCourses);
 // Get Details for a Specific Courses
 router.get("/getCourseDetails", getCourseDetails);
 router.post("/editCourse", auth, isInstructor, editCourse)
-
+// Get all Courses Under a Specific Instructor
+router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
+// Get Details for a Specific Courses
+router.post("/getFullCourseDetails", auth, getFullCourseDetails)
+router.delete("/deleteCourse",deleteCourse);
 // ************************************************************************************************
 //                        Category routes (Only by Admin)
 // ***********************************************************************************************
 // Category can Only be Created by Admin
 router.post("/createCategory", auth, isAdmin, createCategory);
 router.get("/showAllCategories", showAllCategories);
-router.get("/categoryPageDetails", categoryPageDetails);
+router.post("/getCategoryPageDetails", categoryPageDetails);
 
 // *************************************************************************************************
 //                          Rating and Review
