@@ -7,6 +7,7 @@ const { default: mongoose } = require("mongoose");
 const {courseEnrollmentEmail} = require("../templates/courseEnrollmentEmail")
 const { paymentSuccessEmail } = require("../templates/paymentSuccessEmail");
 const crypto = require("crypto");
+const CourseProgress = require("../models/CourseProgress");
 
 // Without using webhooks
 
@@ -115,7 +116,7 @@ const enrollStudents = async (courses, userId, res) => {
       //find the course and enroll the student in it
       const enrolledCourse = await Course.findOneAndUpdate(
         { _id: courseId },
-        { $push: { studentsEnrolled: userId } },
+        { $push: { studentEnrolled: userId } },
         { new: true }
       );
 
@@ -125,6 +126,13 @@ const enrollStudents = async (courses, userId, res) => {
           .json({ success: false, message: "Course not Found" });
       }
 
+      // courseProgress me entry create kardo
+      const courseProgress = await CourseProgress.create({
+        courseID : courseId,
+        userID: userId,
+        completedVideos : []
+      })
+      // now associate this courseProgress with the student
       //find the student and add the course to their list of enrolledCOurses
 
       const enrolledStudent = await User.findByIdAndUpdate(
@@ -132,6 +140,7 @@ const enrollStudents = async (courses, userId, res) => {
         {
           $push: {
             courses: courseId,
+            courseProgress : courseProgress._id
           },
         },
         { new: true }

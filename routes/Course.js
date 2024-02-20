@@ -51,6 +51,11 @@ const {
   isAdmin,
 } = require("../middlewares/auth");
 
+//CourseProgress Handler import
+const {
+  updateCourseProgress
+} = require("../controllers/CourseProgress")
+
 // Courses can Only be Created by Instructors
 router.post("/createCourse", auth, isInstructor, createCourse);
 //Add a Section to a Course
@@ -75,6 +80,8 @@ router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
 // Get Details for a Specific Courses
 router.post("/getFullCourseDetails", auth, getFullCourseDetails)
 router.delete("/deleteCourse",deleteCourse);
+
+router.post("/updateCourseProgress",auth,isStudent,updateCourseProgress);
 // ************************************************************************************************
 //                        Category routes (Only by Admin)
 // ***********************************************************************************************

@@ -2,6 +2,8 @@ const Profile = require("../models/Profile");
 const User = require("../models/User");
 const Course = require("../models/Course");
 const {uploadImageToCloudinary} = require("../utils/imageUploader");
+const { convertSecondsToDuration } = require("../utils/convertSecondsToDuration");
+const CourseProgress = require("../models/CourseProgress")
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -31,6 +33,7 @@ exports.updateProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Profile Updated Successfully",
+      profileDetails
     });
   } catch (err) {
     return res.status(500).json({
@@ -112,7 +115,7 @@ exports.updateProfilePicture = async (req, res) => {
       1000,
       1000
     )
-    console.log(image)
+    console.log("image" , image)
     const updatedProfile = await User.findByIdAndUpdate(
       { _id: userId },
       { image: image.secure_url },
@@ -133,27 +136,104 @@ exports.updateProfilePicture = async (req, res) => {
 
 // Get all courses of a user
 exports.getEnrolledCourses = async (req, res) => {
-  try {
-    const userId = req.user.id
-    const userDetails = await User.findOne({
-      _id: userId,
+	try {
+	  const userId = req.user.id
+	  let userDetails = await User.findOne({
+		_id: userId,
+	  })
+		.populate({
+		  path: "courses",
+		  populate: {
+			path: "courseContent",
+			populate: {
+			  path: "subSection",
+			},
+		  },
+		})
+		.exec()
+
+	  userDetails = userDetails.toObject()
+	  var SubsectionLength = 0
+	  for (var i = 0; i < userDetails?.courses?.length; i++) {
+		let totalDurationInSeconds = 0
+		SubsectionLength = 0
+		for (var j = 0; j < userDetails?.courses[i]?.courseContent?.length; j++) {
+		  totalDurationInSeconds += userDetails.courses[i].courseContent[
+			j
+		  ].subSection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+		  userDetails.courses[i].totalDuration = convertSecondsToDuration(
+			totalDurationInSeconds
+		  )
+		  SubsectionLength +=
+			userDetails.courses[i].courseContent[j].subSection.length
+		}
+		let courseProgressCount = await CourseProgress.findOne({
+		  courseID: userDetails.courses[i]._id,
+		  userID: userId,
+		})
+    // console.log("courseProgressCount" , courseProgressCount);
+		courseProgressCount = courseProgressCount?.completedVideos.length
+		if (SubsectionLength === 0) {
+		  userDetails.courses[i].progressPercentage = 100
+		} else {
+		  // To make it up to 2 decimal point
+		  const multiplier = Math.pow(10, 2)
+		  userDetails.courses[i].progressPercentage =
+			Math.round(
+			  (courseProgressCount / SubsectionLength) * 100 * multiplier
+			) / multiplier
+		}
+	  }
+  
+	  if (!userDetails) {
+		return res.status(400).json({
+		  success: false,
+		  message: `Could not find user with id: ${userDetails}`,
+		})
+	  }
+	  return res.status(200).json({
+		success: true,
+		data: userDetails.courses,
+	  })
+	} catch (error) {
+	  return res.status(500).json({
+		success: false,
+		message: error.message,
+	  })
+	}
+  }
+
+
+  //get stats of a instructor
+
+  exports.instructorDashboard = async(req,res) => {
+    try{
+      const instructorId = req.user.id;
+      const courseDetails = await Course.find({instructor:instructorId});
+      const courseData = courseDetails.map((course) =>{
+        const totalStudentsEnrolled = course.studentEnrolled.length;
+        const totalAmountGenerated = totalStudentsEnrolled*(course.price);
+
+        //create a new obj with additionalFields
+        const courseDataWithStats = {
+          _id : course._id,
+          courseName : course.courseName,
+          courseDescription : course.courseDescription,
+          totalAmountGenerated,
+          totalStudentsEnrolled
+        }
+        return courseDataWithStats;
     })
-      .populate("courses")
-      .exec()
-    if (!userDetails) {
-      return res.status(400).json({
-        success: false,
-        message: `Could not find user with id: ${userDetails}`,
+    return res.status(200).json({
+      success:true,
+      message:"Stats Fetched Successfully",
+      courses : courseData
+    })
+    } catch(err){
+      console.error(err);
+      res.status(500).json({
+        message:"Internal Server Error"
       })
     }
-    return res.status(200).json({
-      success: true,
-      data: userDetails.courses,
-    })
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    })
   }
-};
+
