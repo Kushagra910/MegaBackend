@@ -4,6 +4,8 @@ const Course = require("../models/Course");
 const {uploadImageToCloudinary} = require("../utils/imageUploader");
 const { convertSecondsToDuration } = require("../utils/convertSecondsToDuration");
 const CourseProgress = require("../models/CourseProgress")
+const mongoose = require("mongoose")
+const RatingAndReview = require("../models/RatingAndReview")
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -58,17 +60,21 @@ exports.deleteProfile = async (req, res) => {
       });
     }
     //delete profile
-
-    const profileId = userDetails.additionalDetails;
-    await Profile.findByIdAndDelete({_id:profileId});
+    const profileId = new mongoose.Types.ObjectId( userDetails.additionalDetails);
+    console.log(profileId);
     //Unenroll user from all Enrolled Courses (used UpdateMany method)
-    await Course.updateMany({studentEnrolled:id},{
-      $pull:{
-        studentEnrolled : id,
-      }
-    },{new:true});
+    for (const courseId of userDetails.courses) {
+      await Course.findByIdAndUpdate(
+        courseId,
+        { $pull: { studentEnrolled: id } },
+        { new: true }
+      )
+      const deletedReviews = await RatingAndReview.deleteMany({ course: courseId });
+      // console.log("Deleted reviews for courseId:", courseId, deletedReviews);
+    }
     //delete user
     await User.findByIdAndDelete({_id:id});
+    await CourseProgress.deleteMany({ userID: id })
     //return response
     return res.status(200).json({
       success: true,
